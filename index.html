@@ -390,7 +390,6 @@
             gap: 16px;
             animation: msgIn 0.35s ease;
             position: relative;
-            group: message;
         }
         .message:hover .msg-actions { opacity: 1; }
         @keyframes msgIn {
@@ -672,7 +671,13 @@
     <script>
         // ==================== EDIT THESE VALUES ====================
         const API_KEY = 'AIzaSyASKqb-lVM43EUiT4IrB0csdLDiLvZHeLM';
-        const MODEL = 'Gemini 3 Flash-Lite';
+        
+        // CORRECT MODEL IDs (all lowercase, no spaces):
+        // "gemini-2.5-pro"          -> smartest, 5 RPM free
+        // "gemini-2.5-flash"        -> fast, 10 RPM free  
+        // "gemini-2.5-flash-lite"   -> fastest, 15 RPM free
+        // "gemini-3-flash-preview"  -> 3-series preview
+        const MODEL = 'gemini-2.5-flash-lite';
         // ===========================================================
 
         const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:streamGenerateContent`;
@@ -696,11 +701,8 @@
         const centerStop = document.getElementById('centerStop');
         const bottomStop = document.getElementById('bottomStop');
 
-        // Theme init
         const savedTheme = localStorage.getItem('voldex-theme') || 'light';
         if (savedTheme === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
-
-        // Mobile menu
         if (window.innerWidth <= 768) document.getElementById('menuBtn').style.display = 'flex';
 
         [centerInput, bottomInput].forEach(el => {
@@ -712,7 +714,6 @@
             });
         });
 
-        // Drag & drop
         ['dropZone','bottomDropZone'].forEach(id => {
             const zone = document.getElementById(id);
             zone.addEventListener('dragover', e => { e.preventDefault(); zone.style.borderColor = '#6366f1'; });
@@ -1173,7 +1174,6 @@
             }
         });
 
-        // Init
         renderHistory();
         if (savedTheme === 'dark') document.getElementById('themeLabel').textContent = 'Light Mode';
     </script>
