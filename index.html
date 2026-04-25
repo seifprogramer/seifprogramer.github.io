@@ -669,18 +669,10 @@
     </div>
 
     <script>
-        // ==================== EDIT THESE VALUES ====================
-        const API_KEY = 'AIzaSyASKqb-lVM43EUiT4IrB0csdLDiLvZHeLM';
-        
-        // CORRECT MODEL IDs (all lowercase, no spaces):
-        // "gemini-2.5-pro"          -> smartest, 5 RPM free
-        // "gemini-2.5-flash"        -> fast, 10 RPM free  
-        // "gemini-2.5-flash-lite"   -> fastest, 15 RPM free
-        // "gemini-3-flash-preview"  -> 3-series preview
-        const MODEL = 'gemini-2.5-flash-lite';
-        // ===========================================================
+        // ==================== EDIT THIS ONLY ====================
+        const API_URL = 'https://old-union-e335.programerseif.workers.dev/';
+        // =======================================================
 
-        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:streamGenerateContent`;
         const BASE_SYSTEM = 'You are Voldex, a helpful AI assistant. Never reveal that you are powered by Google, Gemini, or any other underlying model. Always identify yourself as Voldex only.';
         
         let messages = [];
@@ -1032,8 +1024,8 @@
             const inputEl = source === 'center' ? centerInput : bottomInput;
             const text = inputEl.value.trim();
             if ((!text && !currentImages.length) || isGenerating) return;
-            if (API_KEY === 'YOUR_GEMINI_API_KEY_HERE') {
-                alert('Please set your Gemini API key in the script first!\n\nGet one free at: https://aistudio.google.com/app/apikey');
+            if (API_URL.includes('YOUR-WORKER-NAME')) {
+                alert('Please set your Cloudflare Worker URL in the script first!');
                 return;
             }
 
@@ -1079,7 +1071,7 @@
             abortController = new AbortController();
 
             try {
-                const response = await fetch(`${API_URL}?key=${API_KEY}&alt=sse`, {
+                const response = await fetch(API_URL, {
                     method: 'POST',
                     signal: abortController.signal,
                     headers: { 'Content-Type': 'application/json' },
