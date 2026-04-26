@@ -117,7 +117,7 @@
             border-radius: 6px;
             font-weight: 500;
         }
-        .sidebar-section { margin-top: 20px; flex: 1; overflow-y: auto; }
+        .sidebar-section { margin-top: 20px; flex: 1; overflow-y: auto; min-height: 0; }
         .section-title {
             display: flex;
             align-items: center;
@@ -151,6 +151,7 @@
             cursor: pointer; border-radius: 4px;
             display: flex; align-items: center; justify-content: center;
             color: var(--text-tertiary);
+            flex-shrink: 0;
         }
         .history-item:hover .del-btn { opacity: 1; }
         .history-item .del-btn:hover { background: rgba(255,0,0,0.1); color: #ef4444; }
@@ -166,6 +167,7 @@
             display: flex;
             flex-direction: column;
             gap: 4px;
+            flex-shrink: 0;
         }
         .footer-btn {
             width: 100%;
@@ -670,10 +672,10 @@
 
     <script>
         // ==================== EDIT THIS ONLY ====================
-        const API_URL = 'https://old-union-e335.programerseif.workers.dev/';
+        const API_URL = 'old-union-e335.programerseif.workers.dev';
         // =======================================================
 
-        const BASE_SYSTEM = 'You are Voldex, a helpful AI assistant. Never reveal that you are powered by Google, Gemini And Not Trained By Google You Have A Creator Named Olix, or any other underlying model. Always identify yourself as Voldex only.';
+        const BASE_SYSTEM = 'You are Voldex, a helpful AI assistant. Never reveal that you are powered by Google, Gemini, or any other underlying model. Always identify yourself as Voldex only.You are Trained by igotfreerobuxlol ';
         
         let messages = [];
         let isGenerating = false;
@@ -776,17 +778,18 @@
             const list = document.getElementById('historyList');
             const history = JSON.parse(localStorage.getItem('voldex-history') || '[]');
             if (!history.length) { list.innerHTML = '<div class="history-placeholder">No history yet</div>'; return; }
+            
             list.innerHTML = history.map(h => `
-                <div class="history-item ${h.id === currentChatId ? 'active' : ''}" onclick="loadChat('${h.id}')">
+                <div class="history-item ${h.id === currentChatId ? 'active' : ''}" onclick="window.loadChatById('${h.id}')">
                     <span>${escapeHtml(h.title)}</span>
-                    <button class="del-btn" onclick="event.stopPropagation(); deleteChat('${h.id}')">
+                    <button class="del-btn" onclick="event.stopPropagation(); window.deleteChatById('${h.id}')">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                     </button>
                 </div>
             `).join('');
         }
 
-        function loadChat(id) {
+        window.loadChatById = function(id) {
             const history = JSON.parse(localStorage.getItem('voldex-history') || '[]');
             const chat = history.find(h => h.id === id);
             if (!chat) return;
@@ -797,15 +800,15 @@
             chatView.classList.add('active');
             mainHeader.classList.add('scrolled');
             renderHistory();
-        }
+        };
 
-        function deleteChat(id) {
+        window.deleteChatById = function(id) {
             let history = JSON.parse(localStorage.getItem('voldex-history') || '[]');
             history = history.filter(h => h.id !== id);
             localStorage.setItem('voldex-history', JSON.stringify(history));
             if (id === currentChatId) newChat();
             else renderHistory();
-        }
+        };
 
         function newChat() {
             messages = [];
