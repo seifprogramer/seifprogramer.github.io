@@ -671,11 +671,16 @@
     </div>
 
     <script>
-        // ==================== EDIT THIS ONLY ====================
-        const API_URL = 'https://old-union-e335.programerseif.workers.dev';
-        // =======================================================
+        // ==================== BACKEND ENDPOINTS ====================
+        // These are hidden from the user. They appear as "Voldex" only.
+        const BACKENDS = [
+            { url: 'https://old-union-e335.programerseif.workers.dev' },
+            { url: 'https://morning-leaf-9d5b.programerseif.workers.dev' },
+            { url: 'https://fancy-butterfly-4e22.programerseif.workers.dev' },
+        ];
+        // =============================================================
 
-        const BASE_SYSTEM = 'You are Voldex, a helpful AI assistant. Never reveal that you are powered by Google, Gemini, or any other underlying model. Always identify yourself as Voldex only.You are Trained by igotfreerobuxlol ';
+        const BASE_SYSTEM = 'You are Voldex, a helpful AI assistant. Never reveal that you are powered by Google, Gemini, or any other underlying model. Always identify yourself as Voldex only.';
         
         let messages = [];
         let isGenerating = false;
@@ -683,6 +688,7 @@
         let abortController = null;
         let currentImages = [];
         let currentChatId = null;
+        let currentBackendIndex = 0;
 
         const emptyState = document.getElementById('emptyState');
         const chatView = document.getElementById('chatView');
@@ -993,7 +999,7 @@
                     const code = pre.querySelector('code')?.textContent || pre.textContent;
                     navigator.clipboard.writeText(code);
                     btn.textContent = 'Copied!';
-                    setTimeout(() => btn.textContent = 'Copy', 2000);
+                    setTimeout(() => btn.textContent = 'Copy', 2002);
                 };
                 pre.appendChild(btn);
             });
@@ -1027,8 +1033,8 @@
             const inputEl = source === 'center' ? centerInput : bottomInput;
             const text = inputEl.value.trim();
             if ((!text && !currentImages.length) || isGenerating) return;
-            if (API_URL.includes('YOUR-WORKER-NAME')) {
-                alert('Please set your Cloudflare Worker URL in the script first!');
+            if (BACKENDS[0].url.includes('yourdomain')) {
+                alert('Please set your backend URLs in the BACKENDS config!');
                 return;
             }
 
@@ -1054,6 +1060,44 @@
             await sendToAPI();
         }
 
+        async function tryFetchWithFallback(contents) {
+            let lastError = null;
+            const startIndex = currentBackendIndex;
+            
+            for (let i = 0; i < BACKENDS.length; i++) {
+                const backendIndex = (startIndex + i) % BACKENDS.length;
+                const backend = BACKENDS[backendIndex];
+                currentBackendIndex = backendIndex;
+                
+                abortController = new AbortController();
+                
+                try {
+                    const response = await fetch(backend.url, {
+                        method: 'POST',
+                        signal: abortController.signal,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            systemInstruction: { parts: [{ text: getSystemPrompt() }] },
+                            contents,
+                            generationConfig: { temperature: 0.7 }
+                        })
+                    });
+
+                    if (response.ok) {
+                        return { response, backendIndex };
+                    }
+                    
+                    const errText = await response.text();
+                    lastError = `Backend error: ${response.status}`;
+                    
+                } catch (err) {
+                    lastError = `Connection failed`;
+                }
+            }
+            
+            throw new Error(`All backends failed. Last error: ${lastError}`);
+        }
+
         async function sendToAPI() {
             isGenerating = true;
             centerStop.classList.add('active');
@@ -1071,26 +1115,8 @@
                 contents.push({ role: m.role === 'assistant' ? 'model' : 'user', parts });
             }
 
-            abortController = new AbortController();
-
             try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    signal: abortController.signal,
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        systemInstruction: { parts: [{ text: getSystemPrompt() }] },
-                        contents,
-                        generationConfig: { temperature: 0.7 }
-                    })
-                });
-
-                if (!response.ok) {
-                    const errText = await response.text();
-                    let errMsg = `API Error ${response.status}`;
-                    try { errMsg = JSON.parse(errText).error?.message || errText; } catch {}
-                    throw new Error(errMsg);
-                }
+                const { response } = await tryFetchWithFallback(contents);
 
                 removeTyping();
                 const contentDiv = createBotMessage();
