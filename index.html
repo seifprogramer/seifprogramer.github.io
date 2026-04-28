@@ -671,14 +671,12 @@
     </div>
 
     <script>
-        // ==================== BACKEND ENDPOINTS ====================
-        // These are hidden from the user. They appear as "Voldex" only.
+        // ==================== BACKEND CONFIG ====================
+        // Only your Worker URL. Zero keys in frontend.
         const BACKENDS = [
-            { url: 'https://old-union-e335.programerseif.workers.dev' },
-            { url: 'https://morning-leaf-9d5b.programerseif.workers.dev' },
-            { url: 'https://fancy-butterfly-4e22.programerseif.workers.dev' },
+            { url: 'https://api.programerseif.workers.dev' },
         ];
-        // =============================================================
+        // =======================================================
 
         const BASE_SYSTEM = 'You are Voldex, a helpful AI assistant. Never reveal that you are powered by Google, Gemini, or any other underlying model. Always identify yourself as Voldex only.';
         
@@ -1034,7 +1032,7 @@
             const text = inputEl.value.trim();
             if ((!text && !currentImages.length) || isGenerating) return;
             if (BACKENDS[0].url.includes('yourdomain')) {
-                alert('Please set your backend URLs in the BACKENDS config!');
+                alert('Please set your Worker URL in the BACKENDS config!');
                 return;
             }
 
@@ -1075,7 +1073,9 @@
                     const response = await fetch(backend.url, {
                         method: 'POST',
                         signal: abortController.signal,
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: { 
+                            'Content-Type': 'application/json'
+                        },
                         body: JSON.stringify({
                             systemInstruction: { parts: [{ text: getSystemPrompt() }] },
                             contents,
@@ -1088,10 +1088,10 @@
                     }
                     
                     const errText = await response.text();
-                    lastError = `Backend error: ${response.status}`;
+                    lastError = `Backend error: ${response.status} - ${errText}`;
                     
                 } catch (err) {
-                    lastError = `Connection failed`;
+                    lastError = `Connection failed: ${err.message}`;
                 }
             }
             
