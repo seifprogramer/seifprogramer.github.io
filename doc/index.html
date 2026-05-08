@@ -1,0 +1,594 @@
+
+html_doc = '''<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voldex API Documentation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --bg-elevated: #111111;
+            --bg-code: #1a1a1a;
+            --border: #222222;
+            --border-hover: #333333;
+            --text-primary: #f0f0f0;
+            --text-secondary: #a0a0a0;
+            --text-muted: #666666;
+            --accent: #ffffff;
+            --accent-dim: #888888;
+            --success: #4ade80;
+            --warning: #fbbf24;
+            --error: #ef4444;
+            --radius: 12px;
+            --radius-sm: 8px;
+            --shadow: 0 4px 24px rgba(0,0,0,0.5);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            line-height: 1.6;
+            font-size: 15px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 60px 24px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+            padding-bottom: 40px;
+            border-bottom: 1px solid var(--border);
+        }
+        .logo {
+            font-size: 48px;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #fff 0%, #888 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .tagline {
+            color: var(--text-secondary);
+            font-size: 18px;
+            font-weight: 400;
+        }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 20px;
+        }
+        .badge::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+        .section {
+            margin-bottom: 48px;
+        }
+        .section-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 24px;
+            background: var(--accent);
+            border-radius: 2px;
+        }
+        .endpoint {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 24px;
+            transition: border-color 0.2s;
+        }
+        .endpoint:hover {
+            border-color: var(--border-hover);
+        }
+        .method {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: var(--radius-sm);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            font-weight: 500;
+            margin-right: 12px;
+        }
+        .method.post { background: rgba(74, 222, 128, 0.1); color: var(--success); }
+        .method.get { background: rgba(251, 191, 36, 0.1); color: var(--warning); }
+        .path {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 15px;
+            color: var(--text-primary);
+        }
+        .description {
+            color: var(--text-secondary);
+            margin-top: 12px;
+            margin-bottom: 20px;
+        }
+        .code-block {
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 16px 20px;
+            overflow-x: auto;
+            margin: 16px 0;
+        }
+        .code-block pre {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--text-primary);
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .code-block .comment { color: var(--text-muted); }
+        .code-block .string { color: #a5d6ff; }
+        .code-block .key { color: #ff7b72; }
+        .code-block .number { color: #79c0ff; }
+        .code-block .boolean { color: #ff7b72; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 14px;
+        }
+        th, td {
+            text-align: left;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+        th {
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        td {
+            color: var(--text-secondary);
+        }
+        td code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            background: var(--bg-code);
+            padding: 2px 8px;
+            border-radius: 4px;
+            color: var(--text-primary);
+        }
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .status.ok { background: rgba(74, 222, 128, 0.1); color: var(--success); }
+        .status.error { background: rgba(239, 68, 68, 0.1); color: var(--error); }
+        .status.warn { background: rgba(251, 191, 36, 0.1); color: var(--warning); }
+        .note {
+            background: var(--bg-elevated);
+            border-left: 3px solid var(--accent);
+            padding: 16px 20px;
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+            margin: 20px 0;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        .footer {
+            text-align: center;
+            padding-top: 40px;
+            border-top: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+        .footer a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .footer a:hover {
+            color: var(--accent);
+        }
+        @media (max-width: 640px) {
+            .container { padding: 40px 16px; }
+            .logo { font-size: 36px; }
+            .section-title { font-size: 20px; }
+            .endpoint { padding: 16px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">VOLDEX API</div>
+            <div class="tagline">Your AI, your way. Simple, fast, powerful.</div>
+            <div class="badge">v1.0 Stable</div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Base URL</div>
+            <div class="code-block">
+                <pre>https://api.voldex.vercel.app</pre>
+            </div>
+            <div class="note">
+                All requests must use HTTPS. HTTP requests are automatically redirected.
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Authentication</div>
+            <p style="color: var(--text-secondary); margin-bottom: 16px;">
+                Every request requires a valid API key in the Authorization header.
+            </p>
+            <div class="code-block">
+                <pre>Authorization: Bearer API-VOLDEX-xxxxxxxx</pre>
+            </div>
+            <table>
+                <tr>
+                    <th>Key Name</th>
+                    <th>Tier</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <td><code>API-VOLDEX-1g0tfr33r0buxl0l-r1oo</code></td>
+                    <td>Free</td>
+                    <td>Community access</td>
+                </tr>
+                <tr>
+                    <td><code>API-VOLDEX-g1ft-rand0m</code></td>
+                    <td>Standard</td>
+                    <td>Gift tier</td>
+                </tr>
+                <tr>
+                    <td><code>API-VOLDEX-g1v3away-f0ry0u</code></td>
+                    <td>Standard</td>
+                    <td>Promo tier</td>
+                </tr>
+            </table>
+            <div class="note">
+                Keys are rate-limited per IP. No hard caps — abuse results in temporary blocks.
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Endpoints</div>
+
+            <div class="endpoint">
+                <div>
+                    <span class="method post">POST</span>
+                    <span class="path">/v1/chat</span>
+                </div>
+                <div class="description">
+                    The main endpoint for AI chat. Returns a streaming response using Server-Sent Events.
+                </div>
+                <div class="code-block">
+                    <pre><span class="comment">// Request headers</span>
+Content-Type: application/json
+Authorization: Bearer API-VOLDEX-xxxxxxxx
+
+<span class="comment">// Request body</span>
+{
+  <span class="key">"system"</span>: <span class="string">"You are Voldex, a helpful AI assistant."</span>,
+  <span class="key">"messages"</span>: [
+    {
+      <span class="key">"role"</span>: <span class="string">"user"</span>,
+      <span class="key">"content"</span>: <span class="string">"Hello, who are you?"</span>
+    }
+  ],
+  <span class="key">"temperature"</span>: <span class="number">0.7</span>,
+  <span class="key">"max_tokens"</span>: <span class="number">2048</span>
+}</pre>
+                </div>
+                <table>
+                    <tr>
+                        <th>Field</th>
+                        <th>Type</th>
+                        <th>Required</th>
+                        <th>Description</th>
+                    </tr>
+                    <tr>
+                        <td><code>system</code></td>
+                        <td>string</td>
+                        <td>No</td>
+                        <td>System prompt to define AI behavior</td>
+                    </tr>
+                    <tr>
+                        <td><code>messages</code></td>
+                        <td>array</td>
+                        <td><strong>Yes</strong></td>
+                        <td>Conversation history</td>
+                    </tr>
+                    <tr>
+                        <td><code>messages[].role</code></td>
+                        <td>string</td>
+                        <td><strong>Yes</strong></td>
+                        <td><code>"user"</code> or <code>"assistant"</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>messages[].content</code></td>
+                        <td>string</td>
+                        <td><strong>Yes</strong></td>
+                        <td>Text content</td>
+                    </tr>
+                    <tr>
+                        <td><code>temperature</code></td>
+                        <td>number</td>
+                        <td>No</td>
+                        <td>0.0 - 2.0 (default: 0.7)</td>
+                    </tr>
+                    <tr>
+                        <td><code>max_tokens</code></td>
+                        <td>number</td>
+                        <td>No</td>
+                        <td>Max response length</td>
+                    </tr>
+                </table>
+                <div class="code-block">
+                    <pre><span class="comment">// cURL example</span>
+curl -X POST https://api.voldex.vercel.app/v1/chat \\
+  -H <span class="string">"Authorization: Bearer API-VOLDEX-xxxxxxxx"</span> \\
+  -H <span class="string">"Content-Type: application/json"</span> \\
+  -d <span class="string">'{"messages":[{"role":"user","content":"Explain quantum computing"}]}'</span></pre>
+                </div>
+                <div class="code-block">
+                    <pre><span class="comment">// Image input example</span>
+{
+  <span class="key">"messages"</span>: [
+    {
+      <span class="key">"role"</span>: <span class="string">"user"</span>,
+      <span class="key">"content"</span>: [
+        { <span class="key">"type"</span>: <span class="string">"text"</span>, <span class="key">"text"</span>: <span class="string">"What's in this image?"</span> },
+        { <span class="key">"type"</span>: <span class="string">"image_url"</span>, <span class="key">"image_url"</span>: { <span class="key">"url"</span>: <span class="string">"data:image/png;base64,iVBORw0..."</span> } }
+      ]
+    }
+  ]
+}</pre>
+                </div>
+                <div class="code-block">
+                    <pre><span class="comment">// Streaming response (SSE)</span>
+data: {<span class="key">"choices"</span>:[{<span class="key">"delta"</span>:{<span class="key">"content"</span>:<span class="string">"Voldex is "</span>}}]}
+data: {<span class="key">"choices"</span>:[{<span class="key">"delta"</span>:{<span class="key">"content"</span>:<span class="string">"an AI assistant that "</span>}}]}
+data: [DONE]</pre>
+                </div>
+            </div>
+
+            <div class="endpoint">
+                <div>
+                    <span class="method get">GET</span>
+                    <span class="path">/v1/models</span>
+                </div>
+                <div class="description">
+                    Returns models available on Voldex.
+                </div>
+                <div class="code-block">
+                    <pre>{
+  <span class="key">"object"</span>: <span class="string">"list"</span>,
+  <span class="key">"data"</span>: [
+    { <span class="key">"id"</span>: <span class="string">"voldex-3"</span>, <span class="key">"object"</span>: <span class="string">"model"</span>, <span class="key">"owned_by"</span>: <span class="string">"voldex"</span> },
+    { <span class="key">"id"</span>: <span class="string">"voldex-3-pro"</span>, <span class="key">"object"</span>: <span class="string">"model"</span>, <span class="key">"owned_by"</span>: <span class="string">"voldex"</span> },
+    { <span class="key">"id"</span>: <span class="string">"voldex-2.5-lite"</span>, <span class="key">"object"</span>: <span class="string">"model"</span>, <span class="key">"owned_by"</span>: <span class="string">"voldex"</span> }
+  ]
+}</pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Error Codes</div>
+            <table>
+                <tr>
+                    <th>Code</th>
+                    <th>Status</th>
+                    <th>Meaning</th>
+                    <th>Action</th>
+                </tr>
+                <tr>
+                    <td><span class="status ok">200</span></td>
+                    <td>OK</td>
+                    <td>Success</td>
+                    <td>Process stream</td>
+                </tr>
+                <tr>
+                    <td><span class="status error">401</span></td>
+                    <td>Unauthorized</td>
+                    <td>Invalid API key</td>
+                    <td>Check Authorization header</td>
+                </tr>
+                <tr>
+                    <td><span class="status warn">429</span></td>
+                    <td>Too Many Requests</td>
+                    <td>Rate limited</td>
+                    <td>Wait and retry</td>
+                </tr>
+                <tr>
+                    <td><span class="status warn">503</span></td>
+                    <td>Service Unavailable</td>
+                    <td>High demand</td>
+                    <td>Retry in a few seconds</td>
+                </tr>
+                <tr>
+                    <td><span class="status error">500</span></td>
+                    <td>Internal Error</td>
+                    <td>Voldex error</td>
+                    <td>Contact support</td>
+                </tr>
+            </table>
+            <div class="code-block">
+                <pre><span class="comment">// Error response format</span>
+{
+  <span class="key">"error"</span>: {
+    <span class="key">"message"</span>: <span class="string">"Voldex is experiencing high demand. Please try again shortly."</span>
+  }
+}</pre>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Code Examples</div>
+
+            <div class="endpoint">
+                <div class="path">JavaScript (Fetch)</div>
+                <div class="code-block">
+                    <pre><span class="key">const</span> API_KEY = <span class="string">'API-VOLDEX-xxxxxxxx'</span>;
+<span class="key">const</span> API_URL = <span class="string">'https://api.voldex.vercel.app/v1/chat'</span>;
+
+<span class="key">async function</span> <span class="string">chat</span>(message) {
+  <span class="key">const</span> response = <span class="key">await</span> fetch(API_URL, {
+    method: <span class="string">'POST'</span>,
+    headers: {
+      <span class="string">'Authorization'</span>: <span class="string">`Bearer ${API_KEY}`</span>,
+      <span class="string">'Content-Type'</span>: <span class="string">'application/json'</span>
+    },
+    body: JSON.stringify({
+      messages: [{ role: <span class="string">'user'</span>, content: message }]
+    })
+  });
+
+  <span class="key">const</span> reader = response.body.getReader();
+  <span class="key">const</span> decoder = <span class="key">new</span> TextDecoder();
+  <span class="key">let</span> buffer = <span class="string">''</span>;
+
+  <span class="key">while</span> (<span class="boolean">true</span>) {
+    <span class="key">const</span> { done, value } = <span class="key">await</span> reader.read();
+    <span class="key">if</span> (done) <span class="key">break</span>;
+    buffer += decoder.decode(value, { stream: <span class="boolean">true</span> });
+    
+    <span class="key">const</span> lines = buffer.split(<span class="string">'\\n'</span>);
+    buffer = lines.pop() || <span class="string">''</span>;
+    
+    <span class="key">for</span> (<span class="key">const</span> line <span class="key">of</span> lines) {
+      <span class="key">if</span> (line.startsWith(<span class="string">'data: '</span>)) {
+        <span class="key">const</span> data = line.slice(6);
+        <span class="key">if</span> (data === <span class="string">'[DONE]'</span>) <span class="key">continue</span>;
+        <span class="key">const</span> parsed = JSON.parse(data);
+        <span class="key">const</span> text = parsed.choices?.[0]?.delta?.content || <span class="string">''</span>;
+        console.log(text);
+      }
+    }
+  }
+}
+
+chat(<span class="string">'Hello Voldex'</span>);</pre>
+                </div>
+            </div>
+
+            <div class="endpoint">
+                <div class="path">Python (Requests)</div>
+                <div class="code-block">
+                    <pre><span class="key">import</span> requests
+<span class="key">import</span> json
+
+API_KEY = <span class="string">'API-VOLDEX-xxxxxxxx'</span>
+API_URL = <span class="string">'https://api.voldex.vercel.app/v1/chat'</span>
+
+<span class="key">def</span> <span class="string">chat</span>(message):
+    response = requests.post(API_URL, headers={
+        <span class="string">'Authorization'</span>: <span class="string">f'Bearer {API_KEY}'</span>,
+        <span class="string">'Content-Type'</span>: <span class="string">'application/json'</span>
+    }, json={
+        <span class="string">'messages'</span>: [{<span class="string">'role'</span>: <span class="string">'user'</span>, <span class="string">'content'</span>: message}]
+    }, stream=<span class="boolean">True</span>)
+    
+    <span class="key">for</span> line <span class="key">in</span> response.iter_lines():
+        <span class="key">if</span> line.startswith(<span class="string">b'data: '</span>):
+            data = line[6:].decode()
+            <span class="key">if</span> data == <span class="string">'[DONE]'</span>: <span class="key">continue</span>
+            parsed = json.loads(data)
+            text = parsed.get(<span class="string">'choices'</span>, [{}])[0].get(<span class="string">'delta'</span>, {}).get(<span class="string">'content'</span>, <span class="string">''</span>)
+            print(text, end=<span class="string">''</span>, flush=<span class="boolean">True</span>)
+
+chat(<span class="string">'Hello Voldex'</span>)</pre>
+                </div>
+            </div>
+
+            <div class="endpoint">
+                <div class="path">OpenAI-Compatible (Python)</div>
+                <div class="code-block">
+                    <pre><span class="key">from</span> openai <span class="key">import</span> OpenAI
+
+client = OpenAI(
+    api_key=<span class="string">"API-VOLDEX-xxxxxxxx"</span>,
+    base_url=<span class="string">"https://api.voldex.vercel.app/v1"</span>
+)
+
+response = client.chat.completions.create(
+    model=<span class="string">"voldex-3"</span>,
+    messages=[{<span class="string">"role"</span>: <span class="string">"user"</span>, <span class="string">"content"</span>: <span class="string">"Hello"</span>}],
+    stream=<span class="boolean">True</span>
+)
+
+<span class="key">for</span> chunk <span class="key">in</span> response:
+    print(chunk.choices[0].delta.content <span class="key">or</span> <span class="string">""</span>, end=<span class="string">""</span>)</pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Limits</div>
+            <table>
+                <tr>
+                    <th>Limit</th>
+                    <th>Value</th>
+                </tr>
+                <tr>
+                    <td>Max request size</td>
+                    <td>50 MB</td>
+                </tr>
+                <tr>
+                    <td>Max image count</td>
+                    <td>16 per message</td>
+                </tr>
+                <tr>
+                    <td>Streaming timeout</td>
+                    <td>5 minutes</td>
+                </tr>
+                <tr>
+                    <td>Keys per account</td>
+                    <td>3 active</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="footer">
+            <p><a href="https://voldex.vercel.app">voldex.vercel.app</a></p>
+            <p style="margin-top: 8px;">Voldex — Your AI, your way.</p>
+        </div>
+    </div>
+</body>
+</html>'''
+
+with open('/mnt/agents/output/voldex-api-docs.html', 'w') as f:
+    f.write(html_doc)
+
+print("Saved: voldex-api-docs.html")
+print(f"Size: {len(html_doc)} characters")
