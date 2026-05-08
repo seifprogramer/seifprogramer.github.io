@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/api", "destination": "https://sckoolcbhfaqyqeqiqrk.supabase.co/functions/v1/swift-task" }
+  ]
+}
