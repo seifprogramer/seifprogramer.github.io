@@ -1,5 +1,4 @@
-
-html_doc = '''<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -226,6 +225,7 @@ html_doc = '''<!DOCTYPE html>
             .endpoint { padding: 16px; }
         }
     </style>
+<base target="_blank">
 </head>
 <body>
     <div class="container">
@@ -238,17 +238,17 @@ html_doc = '''<!DOCTYPE html>
         <div class="section">
             <div class="section-title">Base URL</div>
             <div class="code-block">
-                <pre>https://api.voldex.vercel.app</pre>
+                <pre>https://voldex.vercel.app/api</pre>
             </div>
             <div class="note">
-                All requests must use HTTPS. HTTP requests are automatically redirected.
+                All requests must use HTTPS. The API endpoint is <code>/api</code> on your Vercel domain. No <code>/v1</code> prefix.
             </div>
         </div>
 
         <div class="section">
             <div class="section-title">Authentication</div>
             <p style="color: var(--text-secondary); margin-bottom: 16px;">
-                Every request requires a valid API key in the Authorization header.
+                Every request requires a valid Voldex API key in the Authorization header.
             </p>
             <div class="code-block">
                 <pre>Authorization: Bearer API-VOLDEX-xxxxxxxx</pre>
@@ -276,7 +276,7 @@ html_doc = '''<!DOCTYPE html>
                 </tr>
             </table>
             <div class="note">
-                Keys are rate-limited per IP. No hard caps — abuse results in temporary blocks.
+                Keys are validated server-side. Never expose keys in public repositories or client-side code.
             </div>
         </div>
 
@@ -286,27 +286,31 @@ html_doc = '''<!DOCTYPE html>
             <div class="endpoint">
                 <div>
                     <span class="method post">POST</span>
-                    <span class="path">/v1/chat</span>
+                    <span class="path">/api</span>
                 </div>
                 <div class="description">
-                    The main endpoint for AI chat. Returns a streaming response using Server-Sent Events.
+                    The main endpoint for AI chat. Returns a streaming response using Server-Sent Events (SSE).
+                    Accepts Gemini native format.
                 </div>
                 <div class="code-block">
                     <pre><span class="comment">// Request headers</span>
 Content-Type: application/json
 Authorization: Bearer API-VOLDEX-xxxxxxxx
 
-<span class="comment">// Request body</span>
+<span class="comment">// Request body (Gemini native format)</span>
 {
-  <span class="key">"system"</span>: <span class="string">"You are Voldex, a helpful AI assistant."</span>,
-  <span class="key">"messages"</span>: [
+  <span class="key">"systemInstruction"</span>: {
+    <span class="key">"parts"</span>: [{ <span class="key">"text"</span>: <span class="string">"You are Voldex, a helpful AI assistant."</span> }]
+  },
+  <span class="key">"contents"</span>: [
     {
       <span class="key">"role"</span>: <span class="string">"user"</span>,
-      <span class="key">"content"</span>: <span class="string">"Hello, who are you?"</span>
+      <span class="key">"parts"</span>: [{ <span class="key">"text"</span>: <span class="string">"Hello, who are you?"</span> }]
     }
   ],
-  <span class="key">"temperature"</span>: <span class="number">0.7</span>,
-  <span class="key">"max_tokens"</span>: <span class="number">2048</span>
+  <span class="key">"generationConfig"</span>: {
+    <span class="key">"temperature"</span>: <span class="number">0.7</span>
+  }
 }</pre>
                 </div>
                 <table>
@@ -317,88 +321,67 @@ Authorization: Bearer API-VOLDEX-xxxxxxxx
                         <th>Description</th>
                     </tr>
                     <tr>
-                        <td><code>system</code></td>
-                        <td>string</td>
+                        <td><code>systemInstruction</code></td>
+                        <td>object</td>
                         <td>No</td>
-                        <td>System prompt to define AI behavior</td>
+                        <td>System prompt with <code>parts: [{text: "..."}]</code></td>
                     </tr>
                     <tr>
-                        <td><code>messages</code></td>
+                        <td><code>contents</code></td>
                         <td>array</td>
                         <td><strong>Yes</strong></td>
-                        <td>Conversation history</td>
+                        <td>Conversation history in Gemini format</td>
                     </tr>
                     <tr>
-                        <td><code>messages[].role</code></td>
+                        <td><code>contents[].role</code></td>
                         <td>string</td>
                         <td><strong>Yes</strong></td>
-                        <td><code>"user"</code> or <code>"assistant"</code></td>
+                        <td><code>"user"</code> or <code>"model"</code> (not "assistant")</td>
                     </tr>
                     <tr>
-                        <td><code>messages[].content</code></td>
-                        <td>string</td>
+                        <td><code>contents[].parts</code></td>
+                        <td>array</td>
                         <td><strong>Yes</strong></td>
-                        <td>Text content</td>
+                        <td>Array of <code>{text: "..."}</code> objects</td>
                     </tr>
                     <tr>
-                        <td><code>temperature</code></td>
-                        <td>number</td>
+                        <td><code>generationConfig</code></td>
+                        <td>object</td>
                         <td>No</td>
-                        <td>0.0 - 2.0 (default: 0.7)</td>
-                    </tr>
-                    <tr>
-                        <td><code>max_tokens</code></td>
-                        <td>number</td>
-                        <td>No</td>
-                        <td>Max response length</td>
+                        <td><code>{temperature: 0.0-2.0}</code> (default: 0.7)</td>
                     </tr>
                 </table>
                 <div class="code-block">
                     <pre><span class="comment">// cURL example</span>
-curl -X POST https://api.voldex.vercel.app/v1/chat \\
-  -H <span class="string">"Authorization: Bearer API-VOLDEX-xxxxxxxx"</span> \\
-  -H <span class="string">"Content-Type: application/json"</span> \\
-  -d <span class="string">'{"messages":[{"role":"user","content":"Explain quantum computing"}]}'</span></pre>
+curl -X POST https://voldex.vercel.app/api \
+  -H <span class="string">"Authorization: Bearer API-VOLDEX-xxxxxxxx"</span> \
+  -H <span class="string">"Content-Type: application/json"</span> \
+  -d <span class="string">'{"contents":[{"role":"user","parts":[{"text":"Explain quantum computing"}]}]}'</span></pre>
                 </div>
                 <div class="code-block">
-                    <pre><span class="comment">// Image input example</span>
+                    <pre><span class="comment">// Image input example (base64)</span>
 {
-  <span class="key">"messages"</span>: [
+  <span class="key">"contents"</span>: [
     {
       <span class="key">"role"</span>: <span class="string">"user"</span>,
-      <span class="key">"content"</span>: [
-        { <span class="key">"type"</span>: <span class="string">"text"</span>, <span class="key">"text"</span>: <span class="string">"What's in this image?"</span> },
-        { <span class="key">"type"</span>: <span class="string">"image_url"</span>, <span class="key">"image_url"</span>: { <span class="key">"url"</span>: <span class="string">"data:image/png;base64,iVBORw0..."</span> } }
+      <span class="key">"parts"</span>: [
+        { <span class="key">"text"</span>: <span class="string">"What is in this image?"</span> },
+        {
+          <span class="key">"inlineData"</span>: {
+            <span class="key">"mimeType"</span>: <span class="string">"image/png"</span>,
+            <span class="key">"data"</span>: <span class="string">"iVBORw0KGgoAAAANSUhEUgAA..."</span>
+          }
+        }
       ]
     }
   ]
 }</pre>
                 </div>
                 <div class="code-block">
-                    <pre><span class="comment">// Streaming response (SSE)</span>
-data: {<span class="key">"choices"</span>:[{<span class="key">"delta"</span>:{<span class="key">"content"</span>:<span class="string">"Voldex is "</span>}}]}
-data: {<span class="key">"choices"</span>:[{<span class="key">"delta"</span>:{<span class="key">"content"</span>:<span class="string">"an AI assistant that "</span>}}]}
+                    <pre><span class="comment">// Streaming response (SSE format)</span>
+data: {<span class="key">"candidates"</span>:[{<span class="key">"content"</span>:{<span class="key">"parts"</span>:[{<span class="key">"text"</span>:<span class="string">"Voldex is "</span>}]}}]}
+data: {<span class="key">"candidates"</span>:[{<span class="key">"content"</span>:{<span class="key">"parts"</span>:[{<span class="key">"text"</span>:<span class="string">"an AI assistant that "</span>}]}}]}
 data: [DONE]</pre>
-                </div>
-            </div>
-
-            <div class="endpoint">
-                <div>
-                    <span class="method get">GET</span>
-                    <span class="path">/v1/models</span>
-                </div>
-                <div class="description">
-                    Returns models available on Voldex.
-                </div>
-                <div class="code-block">
-                    <pre>{
-  <span class="key">"object"</span>: <span class="string">"list"</span>,
-  <span class="key">"data"</span>: [
-    { <span class="key">"id"</span>: <span class="string">"voldex-3"</span>, <span class="key">"object"</span>: <span class="string">"model"</span>, <span class="key">"owned_by"</span>: <span class="string">"voldex"</span> },
-    { <span class="key">"id"</span>: <span class="string">"voldex-3-pro"</span>, <span class="key">"object"</span>: <span class="string">"model"</span>, <span class="key">"owned_by"</span>: <span class="string">"voldex"</span> },
-    { <span class="key">"id"</span>: <span class="string">"voldex-2.5-lite"</span>, <span class="key">"object"</span>: <span class="string">"model"</span>, <span class="key">"owned_by"</span>: <span class="string">"voldex"</span> }
-  ]
-}</pre>
                 </div>
             </div>
         </div>
@@ -415,14 +398,14 @@ data: [DONE]</pre>
                 <tr>
                     <td><span class="status ok">200</span></td>
                     <td>OK</td>
-                    <td>Success</td>
-                    <td>Process stream</td>
+                    <td>Success (streaming)</td>
+                    <td>Process SSE stream</td>
                 </tr>
                 <tr>
                     <td><span class="status error">401</span></td>
                     <td>Unauthorized</td>
                     <td>Invalid API key</td>
-                    <td>Check Authorization header</td>
+                    <td>Check Authorization header format</td>
                 </tr>
                 <tr>
                     <td><span class="status warn">429</span></td>
@@ -433,21 +416,21 @@ data: [DONE]</pre>
                 <tr>
                     <td><span class="status warn">503</span></td>
                     <td>Service Unavailable</td>
-                    <td>High demand</td>
+                    <td>All backends busy</td>
                     <td>Retry in a few seconds</td>
                 </tr>
                 <tr>
                     <td><span class="status error">500</span></td>
                     <td>Internal Error</td>
-                    <td>Voldex error</td>
-                    <td>Contact support</td>
+                    <td>Server error</td>
+                    <td>Contact admin</td>
                 </tr>
             </table>
             <div class="code-block">
-                <pre><span class="comment">// Error response format</span>
+                <pre><span class="comment">// Error response format (JSON)</span>
 {
   <span class="key">"error"</span>: {
-    <span class="key">"message"</span>: <span class="string">"Voldex is experiencing high demand. Please try again shortly."</span>
+    <span class="key">"message"</span>: <span class="string">"Invalid API key. Required format: Bearer API-VOLDEX-..."</span>
   }
 }</pre>
             </div>
@@ -457,10 +440,10 @@ data: [DONE]</pre>
             <div class="section-title">Code Examples</div>
 
             <div class="endpoint">
-                <div class="path">JavaScript (Fetch)</div>
+                <div class="path">JavaScript (Fetch) — Correct Format</div>
                 <div class="code-block">
                     <pre><span class="key">const</span> API_KEY = <span class="string">'API-VOLDEX-xxxxxxxx'</span>;
-<span class="key">const</span> API_URL = <span class="string">'https://api.voldex.vercel.app/v1/chat'</span>;
+<span class="key">const</span> API_URL = <span class="string">'https://voldex.vercel.app/api'</span>;
 
 <span class="key">async function</span> <span class="string">chat</span>(message) {
   <span class="key">const</span> response = <span class="key">await</span> fetch(API_URL, {
@@ -470,7 +453,9 @@ data: [DONE]</pre>
       <span class="string">'Content-Type'</span>: <span class="string">'application/json'</span>
     },
     body: JSON.stringify({
-      messages: [{ role: <span class="string">'user'</span>, content: message }]
+      systemInstruction: { parts: [{ text: <span class="string">'You are Voldex.'</span> }] },
+      contents: [{ role: <span class="string">'user'</span>, parts: [{ text: message }] }],
+      generationConfig: { temperature: <span class="number">0.7</span> }
     })
   });
 
@@ -482,16 +467,16 @@ data: [DONE]</pre>
     <span class="key">const</span> { done, value } = <span class="key">await</span> reader.read();
     <span class="key">if</span> (done) <span class="key">break</span>;
     buffer += decoder.decode(value, { stream: <span class="boolean">true</span> });
-    
-    <span class="key">const</span> lines = buffer.split(<span class="string">'\\n'</span>);
+
+    <span class="key">const</span> lines = buffer.split(<span class="string">'\n'</span>);
     buffer = lines.pop() || <span class="string">''</span>;
-    
+
     <span class="key">for</span> (<span class="key">const</span> line <span class="key">of</span> lines) {
       <span class="key">if</span> (line.startsWith(<span class="string">'data: '</span>)) {
         <span class="key">const</span> data = line.slice(6);
         <span class="key">if</span> (data === <span class="string">'[DONE]'</span>) <span class="key">continue</span>;
         <span class="key">const</span> parsed = JSON.parse(data);
-        <span class="key">const</span> text = parsed.choices?.[0]?.delta?.content || <span class="string">''</span>;
+        <span class="key">const</span> text = parsed.candidates?.[0]?.content?.parts?.map(p => p.text).join(<span class="string">''</span>) || <span class="string">''</span>;
         console.log(text);
       }
     }
@@ -503,28 +488,30 @@ chat(<span class="string">'Hello Voldex'</span>);</pre>
             </div>
 
             <div class="endpoint">
-                <div class="path">Python (Requests)</div>
+                <div class="path">Python (Requests) — Correct Format</div>
                 <div class="code-block">
                     <pre><span class="key">import</span> requests
 <span class="key">import</span> json
 
 API_KEY = <span class="string">'API-VOLDEX-xxxxxxxx'</span>
-API_URL = <span class="string">'https://api.voldex.vercel.app/v1/chat'</span>
+API_URL = <span class="string">'https://voldex.vercel.app/api'</span>
 
 <span class="key">def</span> <span class="string">chat</span>(message):
     response = requests.post(API_URL, headers={
         <span class="string">'Authorization'</span>: <span class="string">f'Bearer {API_KEY}'</span>,
         <span class="string">'Content-Type'</span>: <span class="string">'application/json'</span>
     }, json={
-        <span class="string">'messages'</span>: [{<span class="string">'role'</span>: <span class="string">'user'</span>, <span class="string">'content'</span>: message}]
+        <span class="string">'systemInstruction'</span>: {<span class="string">'parts'</span>: [{<span class="string">'text'</span>: <span class="string">'You are Voldex.'</span>}]},
+        <span class="string">'contents'</span>: [{<span class="string">'role'</span>: <span class="string">'user'</span>, <span class="string">'parts'</span>: [{<span class="string">'text'</span>: message}]}],
+        <span class="string">'generationConfig'</span>: {<span class="string">'temperature'</span>: <span class="number">0.7</span>}
     }, stream=<span class="boolean">True</span>)
-    
+
     <span class="key">for</span> line <span class="key">in</span> response.iter_lines():
         <span class="key">if</span> line.startswith(<span class="string">b'data: '</span>):
             data = line[6:].decode()
             <span class="key">if</span> data == <span class="string">'[DONE]'</span>: <span class="key">continue</span>
             parsed = json.loads(data)
-            text = parsed.get(<span class="string">'choices'</span>, [{}])[0].get(<span class="string">'delta'</span>, {}).get(<span class="string">'content'</span>, <span class="string">''</span>)
+            text = <span class="string">''</span>.join(p.get(<span class="string">'text'</span>, <span class="string">''</span>) <span class="key">for</span> p <span class="key">in</span> parsed.get(<span class="string">'candidates'</span>, [{}])[0].get(<span class="string">'content'</span>, {}).get(<span class="string">'parts'</span>, []))
             print(text, end=<span class="string">''</span>, flush=<span class="boolean">True</span>)
 
 chat(<span class="string">'Hello Voldex'</span>)</pre>
@@ -532,24 +519,52 @@ chat(<span class="string">'Hello Voldex'</span>)</pre>
             </div>
 
             <div class="endpoint">
-                <div class="path">OpenAI-Compatible (Python)</div>
+                <div class="path">Python (urllib — no requests needed)</div>
                 <div class="code-block">
-                    <pre><span class="key">from</span> openai <span class="key">import</span> OpenAI
+                    <pre><span class="key">import</span> urllib.request
+<span class="key">import</span> json
+<span class="key">import</span> ssl
 
-client = OpenAI(
-    api_key=<span class="string">"API-VOLDEX-xxxxxxxx"</span>,
-    base_url=<span class="string">"https://api.voldex.vercel.app/v1"</span>
-)
+API_KEY = <span class="string">'API-VOLDEX-xxxxxxxx'</span>
+API_URL = <span class="string">'https://voldex.vercel.app/api'</span>
 
-response = client.chat.completions.create(
-    model=<span class="string">"voldex-3"</span>,
-    messages=[{<span class="string">"role"</span>: <span class="string">"user"</span>, <span class="string">"content"</span>: <span class="string">"Hello"</span>}],
-    stream=<span class="boolean">True</span>
-)
+payload = {
+    <span class="string">'systemInstruction'</span>: {<span class="string">'parts'</span>: [{<span class="string">'text'</span>: <span class="string">'You are Voldex.'</span>}]},
+    <span class="string">'contents'</span>: [{<span class="string">'role'</span>: <span class="string">'user'</span>, <span class="string">'parts'</span>: [{<span class="string">'text'</span>: <span class="string">'Hello'</span>}]}]
+}
 
-<span class="key">for</span> chunk <span class="key">in</span> response:
-    print(chunk.choices[0].delta.content <span class="key">or</span> <span class="string">""</span>, end=<span class="string">""</span>)</pre>
+data = json.dumps(payload).encode(<span class="string">'utf-8'</span>)
+req = urllib.request.Request(API_URL, data=data, method=<span class="string">'POST'</span>)
+req.add_header(<span class="string">'Authorization'</span>, <span class="string">f'Bearer {API_KEY}'</span>)
+req.add_header(<span class="string">'Content-Type'</span>, <span class="string">'application/json'</span>)
+
+ctx = ssl.create_default_context()
+<span class="key">with</span> urllib.request.urlopen(req, context=ctx) <span class="key">as</span> response:
+    <span class="key">for</span> line <span class="key">in</span> response:
+        line = line.decode(<span class="string">'utf-8'</span>).strip()
+        <span class="key">if</span> line.startswith(<span class="string">'data: '</span>):
+            data = line[6:]
+            <span class="key">if</span> data == <span class="string">'[DONE]'</span>: <span class="key">continue</span>
+            parsed = json.loads(data)
+            text = <span class="string">''</span>.join(p.get(<span class="string">'text'</span>, <span class="string">''</span>) <span class="key">for</span> p <span class="key">in</span> parsed.get(<span class="string">'candidates'</span>, [{}])[0].get(<span class="string">'content'</span>, {}).get(<span class="string">'parts'</span>, []))
+            print(text, end=<span class="string">''</span>)</pre>
                 </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Important Notes</div>
+            <div class="note">
+                <strong>Format:</strong> This API uses <strong>Gemini native format</strong>, not OpenAI format. Use <code>contents</code> with <code>role: "user"</code> or <code>role: "model"</code> and <code>parts: [{text: "..."}]</code>.
+            </div>
+            <div class="note">
+                <strong>Streaming:</strong> Responses are Server-Sent Events (SSE). Each line starts with <code>data:</code>. Parse as JSON, extract <code>candidates[0].content.parts[].text</code>.
+            </div>
+            <div class="note">
+                <strong>Images:</strong> Send base64-encoded images using <code>inlineData: {mimeType: "image/png", data: "base64string"}</code> inside <code>parts</code>.
+            </div>
+            <div class="note">
+                <strong>Backend:</strong> Voldex rotates between Gemini backends automatically. If one is busy, it tries the next. You always get the fastest available response.
             </div>
         </div>
 
@@ -573,8 +588,8 @@ response = client.chat.completions.create(
                     <td>5 minutes</td>
                 </tr>
                 <tr>
-                    <td>Keys per account</td>
-                    <td>3 active</td>
+                    <td>Active API keys</td>
+                    <td>3 per deployment</td>
                 </tr>
             </table>
         </div>
@@ -585,10 +600,4 @@ response = client.chat.completions.create(
         </div>
     </div>
 </body>
-</html>'''
-
-with open('/mnt/agents/output/voldex-api-docs.html', 'w') as f:
-    f.write(html_doc)
-
-print("Saved: voldex-api-docs.html")
-print(f"Size: {len(html_doc)} characters")
+</html>
