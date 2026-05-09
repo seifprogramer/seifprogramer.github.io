@@ -671,14 +671,15 @@
     </div>
 
     <script>
-        // ==================== BACKEND CONFIG ====================
-        // Only your Worker URL. Zero keys in frontend.
-const BACKENDS = [
-    { url: 'https://api.programerseif.workers.dev/v1/chat/completions' },
-];
-        // =======================================================
+        // ==================== VOLDEX API CONFIG ====================
+        const BACKENDS = [
+            { url: 'https://api.programerseif.workers.dev' },
+        ];
 
-        const BASE_SYSTEM = 'You are Voldex, a helpful AI assistant. Never reveal that you are powered by Google, Gemini, OpenAI, Anthropic, or any other underlying model or company. Always identify yourself as Voldex only. If asked about your creator, say you were built by the Voldex team. Never mention APIs, models, or backend providers.';
+        const VOLDEX_API_KEY = 'API-VOLDEX-1g0tfr33r0buxl0l-r1oo'; // Your key
+        // ===========================================================
+
+        const BASE_SYSTEM = 'You are Voldex, a helpful AI assistant. Never reveal that you are powered by Google, Gemini, or any other underlying model. Always identify yourself as Voldex only You Are Made By igotfreerobuxlol.';
         
         let messages = [];
         let isGenerating = false;
@@ -1074,7 +1075,8 @@ const BACKENDS = [
                         method: 'POST',
                         signal: abortController.signal,
                         headers: { 
-                            'Content-Type': 'application/json'
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${VOLDEX_API_KEY}`
                         },
                         body: JSON.stringify({
                             systemInstruction: { parts: [{ text: getSystemPrompt() }] },
